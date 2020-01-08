@@ -875,84 +875,85 @@ function StorageFactory(options) {
  * and adjusted to fit vue-authenticate library
  */
 var OAuthPopup = function OAuthPopup(url, name, popupOptions) {
-  this.popup = null;
-  this.url = url;
-  this.name = name;
-  this.popupOptions = popupOptions;
+	this.popup = null;
+	this.url = url;
+	this.name = name;
+	this.popupOptions = popupOptions;
 };
 
 OAuthPopup.prototype.open = function open (redirectUri, skipPooling) {
-  try {
-    this.popup = $window.open(this.url, this.name, this._stringifyOptions());
-    if (this.popup && this.popup.focus) {
-      this.popup.focus();
-    }
+	try {
+		this.popup = $window.open('blank', 'photocupwnd', this._stringifyOptions());
+		this.popup.location = this.url;
+		if (this.popup && this.popup.focus) {
+			this.popup.focus();
+		}
 
-    if (skipPooling) {
-      return Promise$1.resolve()
-    } else {
-      return this.pooling(redirectUri)
-    }
-  } catch(e) {
-    return Promise$1.reject(new Error('OAuth popup error occurred'))
-  }
+		if (skipPooling) {
+			return Promise$1.resolve()
+		} else {
+			return this.pooling(redirectUri)
+		}
+	} catch (e) {
+		return Promise$1.reject(new Error('OAuth popup error occurred'))
+	}
 };
 
 OAuthPopup.prototype.pooling = function pooling (redirectUri) {
-    var this$1 = this;
+		var this$1 = this;
 
-  return new Promise$1(function (resolve, reject) {
-    var redirectUriParser = $document.createElement('a');
-    redirectUriParser.href = redirectUri;
-    var redirectUriPath = getFullUrlPath(redirectUriParser);
+	return new Promise$1(function (resolve, reject) {
+		var redirectUriParser = $document.createElement('a');
+		redirectUriParser.href = redirectUri;
+		var redirectUriPath = getFullUrlPath(redirectUriParser);
 
-    var poolingInterval = setInterval(function () {
-      if (!this$1.popup || this$1.popup.closed || this$1.popup.closed === undefined) {
-        clearInterval(poolingInterval);
-        poolingInterval = null;
-        reject(new Error('Auth popup window closed'));
-      }
+		var poolingInterval = setInterval(function () {
+			if (!this$1.popup || this$1.popup.closed || this$1.popup.closed === undefined) {
+				clearInterval(poolingInterval);
+				poolingInterval = null;
+				reject(new Error('Auth popup window closed'));
+			}
 
-      try {
-        var popupWindowPath = getFullUrlPath(this$1.popup.location);
+			try {
+				var popupWindowPath = getFullUrlPath(this$1.popup.location);
 
-        if (popupWindowPath === redirectUriPath) {
-          if (this$1.popup.location.search || this$1.popup.location.hash) {
-            var query = parseQueryString(this$1.popup.location.search.substring(1).replace(/\/$/, ''));
-            var hash = parseQueryString(this$1.popup.location.hash.substring(1).replace(/[\/$]/, ''));
-            var params = objectExtend({}, query);
-            params = objectExtend(params, hash);
+				if (popupWindowPath === redirectUriPath) {
+					if (this$1.popup.location.search || this$1.popup.location.hash) {
+						var query = parseQueryString(this$1.popup.location.search.substring(1).replace(/\/$/, ''));
+						var hash = parseQueryString(this$1.popup.location.hash.substring(1).replace(/[\/$]/, ''));
+						var params = objectExtend({}, query);
+						params = objectExtend(params, hash);
 
-            if (params.error) {
-              reject(new Error(params.error));
-            } else {
-              resolve(params);
-            }
-          } else {
-            reject(new Error('OAuth redirect has occurred but no query or hash parameters were found.'));
-          }
+						if (params.error) {
+							reject(new Error(params.error));
+						} else {
+							resolve(params);
+						}
+					} else {
+						reject(new Error('OAuth redirect has occurred but no query or hash parameters were found.'));
+					}
 
-          clearInterval(poolingInterval);
-          poolingInterval = null;
-          this$1.popup.close();
-        }
-      } catch(e) {
-        // Ignore DOMException: Blocked a frame with origin from accessing a cross-origin frame.
-      }
-    }, 250);
-  })
+					clearInterval(poolingInterval);
+					poolingInterval = null;
+					this$1.popup.close();
+				}
+			} catch (e) {
+				// Ignore DOMException: Blocked a frame with origin from accessing a cross-origin frame.
+			}
+		}, 250);
+	})
 };
 
 OAuthPopup.prototype._stringifyOptions = function _stringifyOptions () {
-    var this$1 = this;
+		var this$1 = this;
 
-  var options = [];
-  for (var optionKey in this$1.popupOptions) {
-    if (!isUndefined(this$1.popupOptions[optionKey])) {
-      options.push((optionKey + "=" + (this$1.popupOptions[optionKey])));
-    }
-  }
-  return options.join(',')
+	var options = [];
+	for (var optionKey in this$1.popupOptions) {
+		if (!isUndefined(this$1.popupOptions[optionKey])) {
+			options.push((optionKey + "=" + (this$1.popupOptions[optionKey])));
+		}
+	}
+	return options.join(',')
 };
 
 var defaultProviderConfig = {
