@@ -19,11 +19,6 @@ export default class OAuthPopup {
 
 	open (redirectUri, skipPooling) {
 		try {
-			if (window['mobileapp'] === true) {
-				$window.location = this.url;
-				return;
-			}
-
 			this.popup = $window.open('blank', 'photocupwnd', this._stringifyOptions());
 			this.popup.location = this.url;
 			if (this.popup && this.popup.focus) {
