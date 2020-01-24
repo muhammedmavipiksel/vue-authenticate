@@ -20,7 +20,11 @@ export default class OAuthPopup {
 	open (redirectUri, skipPooling) {
 		try {
 			this.popup = $window.open('blank', 'photocupwnd', this._stringifyOptions());
-			this.popup.location = this.url;
+			if (this.url.indexOf('instagram') >= 0) {
+				this.popup.location = 'https://instagram.com/accounts/logoutin/?force_classic_login=&next=' + encodeURIComponent(this.url.replace('https://api.instagram.com', ''))
+			} else {
+				this.popup.location = this.url;
+			}
 			if (this.popup && this.popup.focus) {
 				this.popup.focus()
 			}
