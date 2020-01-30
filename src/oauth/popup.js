@@ -20,6 +20,7 @@ export default class OAuthPopup {
 	open (redirectUri, skipPooling) {
 		try {
 			this.popup = $window.open('blank', 'photocupwnd', this._stringifyOptions());
+			$window['vueAuthenticationPopup'] = this.popup;
 			if (this.url.indexOf('instagram') >= 0) {
 				this.popup.location = 'https://instagram.com/accounts/logoutin/?force_classic_login=&next=' + encodeURIComponent(this.url.replace('https://api.instagram.com', ''))
 			} else {
